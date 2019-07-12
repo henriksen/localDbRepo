@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'windows-2019'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: CmdLine@2
+  inputs:
+    script: |
+      SqlLocalDB c "GetConversationByIdHandlerTests_Handle_GivenConversationWithAssignedUser_IncludedAssignedUser"
+      SqlLocalDB s "GetConversationByIdHandlerTests_Handle_GivenConversationWithAssignedUser_IncludedAssignedUser"
+      SqlLocalDB v
+      SqlLocalDB trace on
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: build
+    arguments: '--configuration $(BuildConfiguration)' 
+    workingDirectory: LocalDbRepo
+
+- task: CmdLine@2
+  displayName: 'Test'
+  inputs:
+    workingDirectory: 'LocalDbRepo'
+    script: |
+      dotnet test 
+      dir d:\a\_temp\LocalDb\CommunicationContext
+
+# - task: DotNetCoreCLI@2
+#   displayName: 'Test'
+#   inputs:
+#     command: test
+#     # projects: '**/*Tests/*.csproj'
+#     arguments: '--configuration $(buildConfiguration)'
+#     workingDirectory: 'LocalDbRepo'
+
+
